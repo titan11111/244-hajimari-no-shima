@@ -5,6 +5,7 @@
   -webkit-user-select: none;
   user-select: none;
   -webkit-user-drag: none;
+  touch-action: none;
 }
 ::selection { background: transparent; color: inherit; }
 html, body {
@@ -47,7 +48,7 @@ html, body {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background: #78b9c6;
+  background: #2ab8d4;
 }
 #world {
   position: absolute;
@@ -63,7 +64,7 @@ html, body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, #082d3eaa, transparent 70%), linear-gradient(0deg, #102d3555, transparent 30%);
+  background: linear-gradient(90deg, #082d3e55, transparent 55%), linear-gradient(0deg, #102d3528, transparent 40%);
 }
 
 header {
@@ -87,6 +88,8 @@ header {
   margin-top: 3px;
 }
 .topright { font-size: 11px; letter-spacing: 1px; }
+/* プレイ中はブランドを消す（ステータス枠と重なって両方読めなくなるため） */
+body.playing .brand { display: none; }
 
 .game-btn, button {
   font: inherit;
@@ -117,42 +120,34 @@ button:disabled { opacity: 0.4; cursor: default; }
   flex-direction: column;
   justify-content: flex-end;
   padding: 12px 8% 16px;
-  background: linear-gradient(90deg, #123941f2 0%, #123941cc 58%, transparent 100%);
+  background: linear-gradient(90deg, #0a3d48f0 0%, #0a3d48a8 42%, transparent 78%);
   pointer-events: auto;
 }
 .eyebrow { color: #ffdb97; font-size: 10px; letter-spacing: 4px; }
 h1 {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(42px, 9vw, 88px);
+  font-size: clamp(40px, 8.4vw, 76px);
   font-weight: 700;
-  line-height: .84;
-  letter-spacing: -3px;
+  line-height: 1.02;
+  letter-spacing: 0.12em;
   margin: 16px 0 14px;
   text-shadow: 0 6px 0 #17414c, 0 12px 30px #082b3755;
   position: relative;
 }
 h1 span { color: #ffde99; }
-h1 em {
-  font-size: 18px;
-  letter-spacing: 0;
-  color: #f7e8c5;
-  position: absolute;
-  bottom: 8px;
-  margin-left: 12px;
-}
 .subtitle {
   display: flex;
   align-items: center;
   gap: 12px;
-  letter-spacing: 6px;
+  letter-spacing: 0.28em;
   font-family: serif;
   font-size: 15px;
 }
 .subtitle span { width: 28px; height: 1px; background: #eed49a; }
 #title p { font-size: 12px; line-height: 1.9; color: #e0eee8; margin: 14px 0; }
 .primary {
-  background: #f3d395;
-  color: #173c43;
+  background: #ffd56a;
+  color: #0d3d3c;
   border: none;
   min-width: 220px;
   font-weight: 700;
@@ -162,12 +157,11 @@ h1 em {
 .primary span { float: right; }
 .secondary { display: block; margin-top: 10px; }
 .instructions { font-size: 10px; line-height: 1.8; color: #d0e1da; margin-top: 14px; }
-.fan { display: block; margin-top: 10px; font-size: 9px; color: #c5d9d0aa; }
 .hidden { display: none !important; }
 
 .status {
   position: absolute;
-  top: 52px;
+  top: 34px;
   left: 10px;
   width: 160px;
   background: #123941dc;
@@ -187,7 +181,7 @@ label { font-size: 9px; display: flex; justify-content: space-between; margin: 6
 .status footer { margin-top: 10px; display: flex; justify-content: space-between; font-size: 10px; color: #f3d395; }
 .quest {
   position: absolute;
-  top: 52px;
+  top: 34px;
   right: 10px;
   text-align: right;
   display: grid;
@@ -202,86 +196,206 @@ label { font-size: 9px; display: flex; justify-content: space-between; margin: 6
 #map {
   position: absolute;
   right: 10px;
-  top: 128px;
-  width: 84px;
-  height: 84px;
+  top: 112px;
+  width: 76px;
+  height: 76px;
   border: 1px solid #fff3c877;
   border-radius: 50%;
   background: #153e44cc;
   z-index: 4;
 }
 
+/* ── 操作盤：モード切替型（探索 / 戦闘 / 会話）────────────────
+   3枚のパネルを同じグリッドセルへ重ね、visibility だけで切り替える。
+   display:none にしないのは、隠れているボタンも 48px 以上を保つため
+   （harness の「操作ボタン48px以上」は非表示ボタンも実測するので、
+     display:none にすると 0×0 になり FAIL する）。 */
 #control-deck {
-  position: relative;
   flex: 0 0 25%;
   height: 25%;
   min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px max(10px, env(safe-area-inset-right, 10px))
+  display: grid;
+  padding: 7px max(8px, env(safe-area-inset-right, 8px))
           max(8px, env(safe-area-inset-bottom, 8px))
-          max(10px, env(safe-area-inset-left, 10px));
-  background: linear-gradient(180deg, #1a4a52 0%, #12353c 100%);
-  border-top: 1px solid #f1d59e88;
+          max(8px, env(safe-area-inset-left, 8px));
+  background: linear-gradient(180deg, #0f5862 0%, #0a3a42 100%);
+  border-top: 1px solid #ffd56acc;
   z-index: 8;
   touch-action: none;
   overflow: hidden;
 }
-#controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.deck-panel {
+  grid-area: 1 / 1;
+  min-height: 0;
+  min-width: 0;
+  visibility: hidden;
+}
+#control-deck[data-mode="field"]  #deck-field,
+#control-deck[data-mode="battle"] #deck-battle,
+#control-deck[data-mode="talk"]   #deck-talk { visibility: visible; }
+
+/* --- 探索モード：十字キー ＋ 視点 ＋ 調べる／傷薬 --- */
+#deck-field { display: flex; align-items: stretch; gap: 8px; }
+.deck-right {
   flex: 1;
   min-width: 0;
-  height: 100%;
-}
-#stick {
-  width: min(22vw, 108px);
-  height: min(22vw, 108px);
-  min-width: 72px;
-  min-height: 72px;
-  border: 1px solid #fff5cd77;
-  border-radius: 50%;
-  background: #143f4533;
-  position: relative;
-  flex-shrink: 0;
-  touch-action: none;
-}
-#knob {
-  position: absolute;
-  width: 40%;
-  height: 40%;
-  left: 30%;
-  top: 30%;
-  border-radius: 50%;
-  background: #fff2cba8;
-  border: 2px solid #fff4d6;
-  pointer-events: none;
-}
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-#interact {
-  min-width: 88px;
-  min-height: 56px;
-  background: #f3d395;
-  color: #214b4a;
-  font-weight: bold;
-}
-#interact small { display: block; font-size: 9px; margin-top: 2px; opacity: .6; }
-#heal { font-size: 12px; min-height: 56px; }
-.sys {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex-shrink: 0;
+  gap: 7px;
 }
-.sys .game-btn { min-width: 56px; min-height: 48px; font-size: 11px; padding: 6px 8px; }
+.deck-row { display: flex; gap: 6px; min-height: 0; }
+.deck-row.top { flex: 0 0 clamp(48px, 26%, 58px); }
+.deck-row.main { flex: 1; }
+.deck-row .game-btn { padding: 4px 6px; min-width: 0; }
+.dpad {
+  position: relative;
+  width: min(34vw, 150px);
+  aspect-ratio: 1 / 1;
+  max-height: 100%;
+  align-self: center;
+  flex-shrink: 0;
+  touch-action: none;
+  background:
+    linear-gradient(#1a6a74, #0d454c) 50% 0 / 34% 100% no-repeat,
+    linear-gradient(#1a6a74, #0d454c) 0 50% / 100% 34% no-repeat;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px #ffd56acc, 0 3px 0 #062428;
+}
+.dpad .arr {
+  position: absolute;
+  color: #fff7dc;
+  font-size: 17px;
+  opacity: 0.7;
+  pointer-events: none;
+  line-height: 1;
+  transition: opacity 0.08s, color 0.08s;
+}
+.dpad .arr.u { top: 6%; left: 50%; transform: translateX(-50%); }
+.dpad .arr.d { bottom: 6%; left: 50%; transform: translateX(-50%); }
+.dpad .arr.l { left: 9%; top: 50%; transform: translateY(-50%); }
+.dpad .arr.r { right: 9%; top: 50%; transform: translateY(-50%); }
+.dpad.press-u .arr.u,
+.dpad.press-d .arr.d,
+.dpad.press-l .arr.l,
+.dpad.press-r .arr.r { opacity: 1; color: #ffe9b7; }
+.dpad-nub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 26%;
+  height: 26%;
+  border-radius: 50%;
+  background: #12353c;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  border: 1px solid #f1d59e88;
+}
+#deck-field .turn {
+  flex: 1;
+  background: #16535c;
+  color: #ffeaba;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+#deck-field .turn small { font-size: 8px; letter-spacing: 1px; opacity: .72; }
+#deck-field .turn.is-pressed, #deck-field .turn:active { background: #2a7c86; }
+.sysbtn {
+  flex: 0 0 48px;
+  min-width: 48px;
+  background: #1a444c;
+  color: #fff7dc;
+  font-size: 15px;
+  line-height: 1.15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.sysbtn small { font-size: 9px; opacity: .72; letter-spacing: 1px; }
+#deck-field .act {
+  flex: 1.75;
+  background: #ffd56a;
+  color: #0d3d3c;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+#deck-field .act b { font-size: clamp(16px, 4.6vw, 21px); letter-spacing: 1px; }
+#deck-field .act small { font-size: 9px; opacity: .55; letter-spacing: 1px; }
+/* 近くに調べられるものがあるときだけ脈打つ＝「いま押せる」が目で分かる */
+#deck-field .act.can-act { animation: actpulse 1.15s ease-in-out infinite; }
+@keyframes actpulse {
+  0%, 100% { box-shadow: 0 0 0 0 #ffd56a00; }
+  50%      { box-shadow: 0 0 0 5px #ffd56a4d; }
+}
+#deck-field .herb {
+  flex: 1;
+  background: #1f8a72;
+  color: #fff7dc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+#deck-field .herb b { font-size: clamp(13px, 3.6vw, 16px); }
+#deck-field .herb small { font-size: 11px; color: #d6f3e6; }
+#deck-field .herb.is-empty { opacity: .5; }
+
+/* --- 戦闘モード：操作盤いっぱいにコマンドを置く --- */
+#deck-battle {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 6px;
+}
+#deck-battle .cmd {
+  min-width: 0;
+  padding: 5px 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 3px;
+  text-align: left;
+  background: #17454e;
+}
+#deck-battle .cmd b { font-size: clamp(13px, 3.8vw, 16px); letter-spacing: .5px; }
+#deck-battle .cmd small { font-size: 9px; color: #cfe5e2; line-height: 1.3; }
+#deck-battle .cmd.atk { background: #a8442f; }
+#deck-battle .cmd.mag { background: #7a4796; }
+#deck-battle .cmd.hrb { background: #1f8a72; }
+#deck-battle .cmd.grd { background: #2c5f8a; }
+#deck-battle .cmd.run { background: #43565e; }
+#deck-battle .cmd.sys { background: #12363d; }
+#deck-battle .cmd:disabled { opacity: .35; }
+
+/* --- 会話モード：送りボタンを操作盤の主役にする --- */
+#deck-talk { display: flex; gap: 8px; align-items: stretch; }
+#deck-talk .talk-next {
+  flex: 1;
+  background: #ffd56a;
+  color: #0d3d3c;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+#deck-talk .talk-next b { font-size: clamp(18px, 5.4vw, 26px); letter-spacing: 3px; }
+#deck-talk .talk-next small { font-size: 10px; opacity: .55; letter-spacing: 1px; }
+.deck-col { display: flex; flex-direction: column; gap: 7px; flex: 0 0 48px; }
+.deck-col .sysbtn { flex: 1; }
 
 #toast {
   position: absolute;
@@ -317,19 +431,20 @@ label { font-size: 9px; display: flex; justify-content: space-between; margin: 6
 .panel p { font-size: 14px; line-height: 1.8; white-space: pre-line; }
 .panel button { display: block; margin-left: auto; }
 #battle { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+/* 敵情報は画面上に浮かせず、下部の戦闘パネルへまとめる。
+   上部へ置くと左のステータス枠とHPバーが重なって両方読めなくなる。 */
 .enemyplate {
-  position: absolute;
-  top: 12%;
-  left: 50%;
-  transform: translateX(-50%);
   text-align: center;
-  min-width: 200px;
-  text-shadow: 0 2px 8px #072d37;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #f1d59e33;
 }
-.enemyplate small { font-size: 9px; letter-spacing: 4px; }
-.enemyplate h2 { font-family: serif; font-size: 20px; letter-spacing: 4px; margin: 8px; }
-.enemyplate .bar { height: 5px; }
-.enemyplate .bar i { background: #f4c77d; }
+.enemyplate small { font-size: 9px; letter-spacing: 4px; color: #efcf90; }
+.enemyplate h2 { font-family: serif; font-size: 19px; letter-spacing: 4px; margin: 4px 0 7px; }
+.enemyplate .bar { height: 6px; }
+.enemyplate .bar i { background: #f4c77d; transition: width .25s ease; }
+/* 戦闘中はクエストと地図を伏せる（今は敵しか見ないため） */
+body.in-battle .quest, body.in-battle #map { display: none; }
 .battlebottom {
   position: absolute;
   bottom: 6px;
@@ -342,10 +457,7 @@ label { font-size: 9px; display: flex; justify-content: space-between; margin: 6
   border-radius: 10px;
   padding: 10px;
 }
-#battlelog { min-height: 36px; font-size: 12px; line-height: 1.6; white-space: pre-line; }
-.commands { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-.commands button { font-size: 12px; padding: 8px 4px; text-align: left; min-height: 48px; }
-.commands small { display: block; font-size: 8px; color: #b8d5d1; margin-top: 4px; }
+#battlelog { min-height: 44px; font-size: 14px; line-height: 1.7; white-space: pre-line; text-align: center; }
 #ending {
   position: absolute;
   inset: 0;
@@ -378,7 +490,11 @@ label { font-size: 9px; display: flex; justify-content: space-between; margin: 6
 #pauseDlg .game-btn { width: 100%; }
 
 @media (max-width: 600px) {
-  .commands { grid-template-columns: repeat(3, 1fr); }
   h1 { font-size: 48px; }
   .status { width: 132px; padding: 8px; }
+}
+@media (max-height: 640px) {
+  .dpad { width: min(30vw, 112px); }
+  #deck-field .act b { font-size: 15px; }
+  #deck-battle .cmd small { display: none; }
 }

@@ -18,17 +18,42 @@
 </head>
 <body>
 <div id="game-shell">
-  <footer id="control-deck" aria-label="操作盤">
-    <div id="controls">
-      <div id="stick" aria-label="移動スティック"><div id="knob"></div></div>
-      <div class="actions">
-        <button type="button" id="heal" class="game-btn">薬草</button>
-        <button type="button" id="interact" class="game-btn">調べる <small>E</small></button>
+  <footer id="control-deck" aria-label="操作盤" data-mode="field">
+    <div class="deck-panel" id="deck-field" aria-label="探索の操作">
+      <div class="dpad" id="dpad" role="group" aria-label="十字キー（移動）">
+        <span class="arr u">▲</span>
+        <span class="arr l">◀</span>
+        <span class="arr r">▶</span>
+        <span class="arr d">▼</span>
+        <span class="dpad-nub"></span>
+      </div>
+      <div class="deck-right">
+        <div class="deck-row top">
+          <button type="button" class="game-btn turn" id="turnL" aria-label="視点を左へ回す">&#9664;<small>視点</small></button>
+          <button type="button" class="game-btn turn" id="turnR" aria-label="視点を右へ回す">&#9654;<small>視点</small></button>
+          <button type="button" class="game-btn sysbtn" id="sound" aria-label="音の切り替え" aria-pressed="true">音<small>切</small></button>
+          <button type="button" class="game-btn sysbtn" id="btnPause" aria-label="一時停止">&#10073;&#10073;</button>
+        </div>
+        <div class="deck-row main">
+          <button type="button" class="game-btn act" id="interact" aria-label="調べる"><b id="interactLabel">調べる</b><small>E / SPACE</small></button>
+          <button type="button" class="game-btn herb" id="heal" aria-label="傷薬を使う"><b>傷薬</b><small id="herbCount">&#215;4</small></button>
+        </div>
       </div>
     </div>
-    <div class="sys">
-      <button type="button" id="sound" class="game-btn" aria-label="音の切り替え" aria-pressed="true">音 OFF</button>
-      <button type="button" id="btnPause" class="game-btn" aria-label="一時停止">Ⅱ</button>
+    <div class="deck-panel" id="deck-battle" aria-label="戦闘コマンド">
+      <button type="button" class="game-btn cmd atk" data-command="attack"><b>&#9876; 斬る</b><small>剣で攻撃</small></button>
+      <button type="button" class="game-btn cmd mag" data-command="magic"><b>&#10022; 焔</b><small>MP 4 · 大ダメージ</small></button>
+      <button type="button" class="game-btn cmd hrb" data-command="herb"><b>&#10010; 傷薬</b><small id="cmdHerbCount">&#215;4 · HP35</small></button>
+      <button type="button" class="game-btn cmd grd" data-command="guard"><b>&#9672; 構える</b><small>軽減 ＋ MP2</small></button>
+      <button type="button" class="game-btn cmd run" data-command="run"><b>&#8599; 退く</b><small>戦闘から離れる</small></button>
+      <button type="button" class="game-btn cmd sys" id="btnPause2" aria-label="一時停止"><b>&#10073;&#10073;</b><small>一時停止</small></button>
+    </div>
+    <div class="deck-panel" id="deck-talk" aria-label="会話の操作">
+      <button type="button" class="game-btn talk-next" id="deckNext"><b>つづける</b><small>タップ / E / SPACE</small></button>
+      <div class="deck-col">
+        <button type="button" class="game-btn sysbtn" id="sound2" aria-label="音の切り替え" aria-pressed="true">音<small>切</small></button>
+        <button type="button" class="game-btn sysbtn" id="btnPause3" aria-label="一時停止">&#10073;&#10073;</button>
+      </div>
     </div>
   </footer>
   <div id="game-stage">
@@ -36,8 +61,8 @@
       <canvas id="world" aria-label="3D冒険フィールド"></canvas>
       <div class="vignette"></div>
       <header>
-        <div class="brand">DQ <span>3D</span><small>はじまりの島</small></div>
-        <div class="topright"><span id="location">リーフ村のはずれ</span></div>
+        <div class="brand">島 <span>旅</span><small>はじまりの島</small></div>
+        <div class="topright"><span id="location">潮見の里のはずれ</span></div>
       </header>
       <section id="hud" class="hidden">
         <div class="status">
@@ -49,7 +74,7 @@
           <footer><span id="gold"></span><span id="herbs"></span></footer>
         </div>
         <div class="quest">
-          <small>MAIN QUEST</small>
+          <small>旅の目的</small>
           <b id="questtext">３つの祠で、光のかけらを集める</b>
           <span id="crystals">◇ ◇ ◇</span>
         </div>
@@ -57,41 +82,33 @@
       </section>
       <section id="title">
         <div class="eyebrow">A LITTLE ISLAND. A GRAND ADVENTURE.</div>
-        <h1>DRAGON<br><span>QUEST</span><em>3D</em></h1>
-        <div class="subtitle"><span></span>はじまりの島<span></span></div>
-        <p>草原を越え、光を集め、竜の待つ古城へ。<br>小さな一歩から、冒険ははじまる。</p>
-        <button type="button" id="start" class="primary game-btn">冒険をはじめる <span>→</span></button>
+        <h1>はじまり<br><span>の島</span></h1>
+        <div class="subtitle"><span></span>光を集め、古城へ<span></span></div>
+        <p>草原を越え、光を集め、竜の待つ古城へ。<br>小さな一歩から、旅ははじまる。</p>
+        <button type="button" id="start" class="primary game-btn">旅をはじめる <span>→</span></button>
         <button type="button" id="continue" class="hidden secondary game-btn">つづきから</button>
-        <div class="instructions">WASD / 矢印キーで移動　 ·　 E / SPACEで調べる<br>下のスティックとボタンでも操作できます</div>
-        <small class="fan">非公式ファン制作ミニゲーム · オリジナルの島と物語</small>
+        <div class="instructions">十字キーで移動　·　画面を左右にドラッグ、または ◀ ▶ 視点ボタン<br>画面タップ / 調べる で会話・祠　·　キーボードは WASD・Q R・E</div>
       </section>
       <div id="toast" role="status"></div>
       <section id="dialog" class="panel hidden">
         <small id="speaker"></small>
         <p id="dialogtext"></p>
-        <button type="button" id="next" class="game-btn">つづける →</button>
+        <button type="button" id="next" class="game-btn">つづける &#9654;</button>
       </section>
       <section id="battle" class="hidden">
-        <div class="enemyplate">
-          <small>MONSTER</small>
-          <h2 id="enemyname"></h2>
-          <div class="bar"><i id="enemybar"></i></div>
-        </div>
         <div class="battlebottom">
-          <div id="battlelog" role="status"></div>
-          <div class="commands">
-            <button type="button" class="game-btn" data-command="attack">⚔ たたかう<small>剣で攻撃</small></button>
-            <button type="button" class="game-btn" data-command="magic">✦ 火の魔法<small>MP 4 · 大ダメージ</small></button>
-            <button type="button" class="game-btn" data-command="herb">✚ 薬草<small>HP 35 回復</small></button>
-            <button type="button" class="game-btn" data-command="guard">◈ ぼうぎょ<small>軽減 ＋ MP 2</small></button>
-            <button type="button" class="game-btn" data-command="run">↗ にげる<small>戦闘から離れる</small></button>
+          <div class="enemyplate">
+            <small>MONSTER</small>
+            <h2 id="enemyname"></h2>
+            <div class="bar"><i id="enemybar"></i></div>
           </div>
+          <div id="battlelog" role="status"></div>
         </div>
       </section>
       <section id="ending" class="hidden">
         <small>ADVENTURE COMPLETE</small>
         <h2>そして、次の冒険へ。</h2>
-        <p>古城に光が戻り、島に穏やかな風が吹いた。<br>勇者の物語は、まだ始まったばかり。</p>
+        <p>古城に光が戻り、島に穏やかな風が吹いた。<br>旅の続きは、まだこの先にある。</p>
         <div id="result"></div>
         <button type="button" id="explore" class="primary game-btn">島をもう少し歩く →</button>
         <button type="button" id="restart" class="secondary game-btn">新しい冒険</button>

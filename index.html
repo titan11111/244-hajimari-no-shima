@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#163f45">
+<meta name="description" content="3Dフィールドで３つの祠を巡り、北の古城の竜を倒す短編RPG。">
+<title>244｜はじまりの島</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="game-shell">
+  <footer id="control-deck" aria-label="操作盤">
+    <div id="controls">
+      <div id="stick" aria-label="移動スティック"><div id="knob"></div></div>
+      <div class="actions">
+        <button type="button" id="heal" class="game-btn">薬草</button>
+        <button type="button" id="interact" class="game-btn">調べる <small>E</small></button>
+      </div>
+    </div>
+    <div class="sys">
+      <button type="button" id="sound" class="game-btn" aria-label="音の切り替え" aria-pressed="true">音 OFF</button>
+      <button type="button" id="btnPause" class="game-btn" aria-label="一時停止">Ⅱ</button>
+    </div>
+  </footer>
+  <div id="game-stage">
+    <div id="screen-wrap">
+      <canvas id="world" aria-label="3D冒険フィールド"></canvas>
+      <div class="vignette"></div>
+      <header>
+        <div class="brand">DQ <span>3D</span><small>はじまりの島</small></div>
+        <div class="topright"><span id="location">リーフ村のはずれ</span></div>
+      </header>
+      <section id="hud" class="hidden">
+        <div class="status">
+          <div><small>旅人</small><b>アレン</b><span id="level">Lv. 1</span></div>
+          <label>HP <span id="hptext"></span></label>
+          <div class="bar"><i id="hpbar"></i></div>
+          <label>MP <span id="mptext"></span></label>
+          <div class="bar mana"><i id="mpbar"></i></div>
+          <footer><span id="gold"></span><span id="herbs"></span></footer>
+        </div>
+        <div class="quest">
+          <small>MAIN QUEST</small>
+          <b id="questtext">３つの祠で、光のかけらを集める</b>
+          <span id="crystals">◇ ◇ ◇</span>
+        </div>
+        <canvas id="map" width="150" height="150" aria-label="島の地図"></canvas>
+      </section>
+      <section id="title">
+        <div class="eyebrow">A LITTLE ISLAND. A GRAND ADVENTURE.</div>
+        <h1>DRAGON<br><span>QUEST</span><em>3D</em></h1>
+        <div class="subtitle"><span></span>はじまりの島<span></span></div>
+        <p>草原を越え、光を集め、竜の待つ古城へ。<br>小さな一歩から、冒険ははじまる。</p>
+        <button type="button" id="start" class="primary game-btn">冒険をはじめる <span>→</span></button>
+        <button type="button" id="continue" class="hidden secondary game-btn">つづきから</button>
+        <div class="instructions">WASD / 矢印キーで移動　 ·　 E / SPACEで調べる<br>下のスティックとボタンでも操作できます</div>
+        <small class="fan">非公式ファン制作ミニゲーム · オリジナルの島と物語</small>
+      </section>
+      <div id="toast" role="status"></div>
+      <section id="dialog" class="panel hidden">
+        <small id="speaker"></small>
+        <p id="dialogtext"></p>
+        <button type="button" id="next" class="game-btn">つづける →</button>
+      </section>
+      <section id="battle" class="hidden">
+        <div class="enemyplate">
+          <small>MONSTER</small>
+          <h2 id="enemyname"></h2>
+          <div class="bar"><i id="enemybar"></i></div>
+        </div>
+        <div class="battlebottom">
+          <div id="battlelog" role="status"></div>
+          <div class="commands">
+            <button type="button" class="game-btn" data-command="attack">⚔ たたかう<small>剣で攻撃</small></button>
+            <button type="button" class="game-btn" data-command="magic">✦ 火の魔法<small>MP 4 · 大ダメージ</small></button>
+            <button type="button" class="game-btn" data-command="herb">✚ 薬草<small>HP 35 回復</small></button>
+            <button type="button" class="game-btn" data-command="guard">◈ ぼうぎょ<small>軽減 ＋ MP 2</small></button>
+            <button type="button" class="game-btn" data-command="run">↗ にげる<small>戦闘から離れる</small></button>
+          </div>
+        </div>
+      </section>
+      <section id="ending" class="hidden">
+        <small>ADVENTURE COMPLETE</small>
+        <h2>そして、次の冒険へ。</h2>
+        <p>古城に光が戻り、島に穏やかな風が吹いた。<br>勇者の物語は、まだ始まったばかり。</p>
+        <div id="result"></div>
+        <button type="button" id="explore" class="primary game-btn">島をもう少し歩く →</button>
+        <button type="button" id="restart" class="secondary game-btn">新しい冒険</button>
+      </section>
+    </div>
+  </div>
+</div>
+<dialog id="pauseDlg" aria-labelledby="pauseTitle">
+  <h2 id="pauseTitle">一時停止</h2>
+  <div class="col">
+    <button type="button" class="game-btn" id="btnResume">再開</button>
+    <button type="button" class="game-btn" id="btnMuteDlg">音の切り替え</button>
+    <button type="button" class="game-btn" id="btnQuit">タイトルへ</button>
+  </div>
+</dialog>
+<script src="three.min.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
